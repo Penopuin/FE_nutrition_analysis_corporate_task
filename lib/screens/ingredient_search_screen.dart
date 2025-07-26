@@ -16,7 +16,6 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
   List<NutritionItem> _results = [];
   bool _isLoading = false;
 
-  // 검색 API 호출
   Future<void> _onSearch() async {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
@@ -43,7 +42,62 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
       context,
       MaterialPageRoute(builder: (_) => NutritionInputScreen(item: item)),
     );
-    setState(() {}); // 누적된 재료 리스트 갱신
+    setState(() {});
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, color: Color(0xFF2AB382)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                hintText: '식재료 검색',
+                border: InputBorder.none,
+              ),
+              onSubmitted: (_) => _onSearch(),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.grey),
+            onPressed: () => _searchController.clear(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectedSummary() {
+    final ingredients = SelectedIngredients.all;
+    if (ingredients.isEmpty) return const SizedBox();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      height: 26,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: ingredients.map((item) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Text(
+                item.foodName ?? '',
+                style: const TextStyle(color: Colors.grey, fontSize: 13),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
   }
 
   Widget _buildResultItem(NutritionItem item) {
@@ -70,7 +124,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
             subtitle: Text('${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorieKcal?.toStringAsFixed(0) ?? '-'} kcal'),
           ),
         )),
-        const SizedBox(height: 80), // 하단 버튼과 간격
+        const SizedBox(height: 80),
       ],
     );
   }
@@ -80,56 +134,50 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
     final selectedCount = SelectedIngredients.count;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('식재료 검색')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // 검색창
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      labelText: '식재료 이름 입력',
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (_) => _onSearch(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _onSearch,
-                  child: const Text('검색'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // 결과 & 누적 리스트
-            if (_isLoading)
-              const CircularProgressIndicator()
-            else if (_results.isEmpty)
-              const Text('검색 결과가 없습니다.')
-            else
-              Expanded(
-                child: ListView(
-                  children: [
-                    ..._results.map(_buildResultItem),
-                    _buildSelectedList(),
-                  ],
-                ),
+      backgroundColor: Colors.white,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 40),
+          _buildSearchBar(),
+          _buildSelectedSummary(),
+          const SizedBox(height: 0),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _results.isEmpty
+                  ? const Center(child: Text('검색 결과가 없습니다.'))
+                  : ListView(
+                children: [
+                  ..._results.map(_buildResultItem),
+                  _buildSelectedList(),
+                ],
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        color: Colors.white,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              offset: const Offset(0, -1),
+              blurRadius: 8,
+            ),
+          ],
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: ElevatedButton(
           onPressed: () {
-            // TODO: 메뉴 최종 생성 화면 또는 POST 전송
+            // TODO: 메뉴 최종 생성 처리
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF2AB382),

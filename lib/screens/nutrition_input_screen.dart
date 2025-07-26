@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../models/nutrition_item.dart';
 import '../models/selected_ingredients.dart';
@@ -32,29 +31,55 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
     _amountController.addListener(() => setState(() {}));
   }
 
-  Widget _readonlyRow(String label, String unit, double? value) {
+  Widget _readonlyField(String label, String unit, double? value, {bool isRequired = false}) {
     final r = ratio;
     final v = value != null ? (value * r) : null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         children: [
-          SizedBox(
-            width: 90,
-            child: Text(label),
-          ),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(v != null ? v.toStringAsFixed(2) : '-'),
+            flex: 2,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(label),
+                if (isRequired)
+                  const Text('*', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          Text(unit),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: IgnorePointer(
+              ignoring: true,
+              child: TextFormField(
+                readOnly: true,
+                decoration: InputDecoration(
+                  suffixText: unit,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                ),
+                controller: TextEditingController(
+                  text: v != null ? v.toStringAsFixed(1) : '-',
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -92,13 +117,21 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
   Widget build(BuildContext context) {
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Colors.grey),
+      borderSide: BorderSide(color: Colors.grey.shade300),
     );
 
+    final selectedCount = SelectedIngredients.count;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('영양성분 입력'),
+        centerTitle: true,
+        title: const Text('영양성분 직접 입력',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
         leading: const BackButton(),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0.5,
       ),
       body: Column(
         children: [
@@ -106,58 +139,116 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('재료명', style: Theme.of(context).textTheme.labelLarge),
+                const Text('재료명', style: TextStyle(fontSize: 14)),
                 const SizedBox(height: 8),
-                Text(widget.item.foodName ?? '이름 없음'),
-
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    widget.item.foodName ?? '이름 없음',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
                 const SizedBox(height: 24),
-                const Text('내용량'),
+                Row(
+                  children: [
+                    const Text('내용량', style: TextStyle(fontSize: 14)),
+                    const Text('*', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _amountController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: '내용량 입력',
-                          border: border,
+                      flex: 3,
+                      child: SizedBox(
+                        height: 48,
+                        child: TextField(
+                          controller: _amountController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            border: border,
+                            enabledBorder: border,
+                            focusedBorder: border,
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: '내용량 입력',
+                            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    DropdownButton<String>(
-                      value: _unit,
-                      items: ['g', 'ml'].map((u) {
-                        return DropdownMenuItem(value: u, child: Text(u));
-                      }).toList(),
-                      onChanged: (val) {
-                        setState(() => _unit = val ?? 'g');
-                      },
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox(
+                        height: 48,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              dropdownColor: Colors.white,
+                              value: _unit,
+                              isExpanded: true,
+                              style: const TextStyle(color: Colors.black),
+                              items: ['g', 'ml']
+                                  .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) setState(() => _unit = val);
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 24),
-                Divider(thickness: 2),
-                const SizedBox(height: 16),
-                const Text('영양성분 (자동 계산)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Divider(thickness: 1, color: Colors.grey),
                 const SizedBox(height: 16),
 
-                _readonlyRow('칼로리', 'kcal', widget.item.calorie_kcal),
-                _readonlyRow('탄수화물', 'g', widget.item.carbohydrate_g),
-                _readonlyRow('당', 'g', widget.item.sugar_g),
-                _readonlyRow('단백질', 'g', widget.item.protein_g),
-                _readonlyRow('지방', 'g', widget.item.fat_g),
-                _readonlyRow('포화지방', 'g', widget.item.saturated_fat_g),
-                _readonlyRow('트랜스지방', 'g', widget.item.trans_fat_g),
-                _readonlyRow('나트륨', 'mg', widget.item.sodium_mg),
-                _readonlyRow('콜레스테롤', 'mg', widget.item.cholesterol_mg),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '영양성분',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _readonlyField('총 칼로리', 'kcal', widget.item.calorie_kcal),
+                _readonlyField('탄수화물', 'g', widget.item.carbohydrate_g),
+                _readonlyField('당', 'g', widget.item.sugar_g),
+                _readonlyField('단백질', 'g', widget.item.protein_g),
+                _readonlyField('지방', 'g', widget.item.fat_g),
+                _readonlyField('포화지방', 'g', widget.item.saturated_fat_g),
+                _readonlyField('트랜스지방', 'g', widget.item.trans_fat_g),
+                _readonlyField('나트륨', 'mg', widget.item.sodium_mg, isRequired: true),
+                _readonlyField('콜레스테롤', 'mg', widget.item.cholesterol_mg),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(color: Colors.black12, offset: Offset(0, -1), blurRadius: 8),
+              ],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
             child: ElevatedButton(
               onPressed: _onAddIngredient,
               style: ElevatedButton.styleFrom(
@@ -167,12 +258,26 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text(
-                '레시피 추가하기',
-                style: TextStyle(fontSize: 16, color: Colors.white),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    '레시피 추가하기',
+                    style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(width: 8),
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    radius: 12,
+                    child: Text(
+                      '$selectedCount',
+                      style: const TextStyle(color: Color(0xFF2AB382), fontWeight: FontWeight.bold),
+                    ),
+                  )
+                ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );
