@@ -1,43 +1,50 @@
 class NutritionItem {
-  final String name; // DESC_KOR: 재료명
-  final String calories; // NUTR_CONT1: 열량(kcal)
-  final String carbohydrates; // NUTR_CONT2: 탄수화물(g)
-  final String protein; // NUTR_CONT3: 단백질(g)
-  final String fat; // NUTR_CONT4: 지방(g)
-  final String sugars; // NUTR_CONT5: 당류(g)
-  final String sodium; // NUTR_CONT6: 나트륨(mg)
-  final String cholesterol; // NUTR_CONT7: 콜레스테롤(mg)
-  final String saturatedFat; // NUTR_CONT8: 포화지방(g)
-  final String transFat; // NUTR_CONT9: 트랜스지방(g)
-  final String servingSize; // SERVING_SIZE: 1회 제공량(g)
+  final String? food_code;
+  final String? food_name;
+  final double? serving_size_g;
+  final double? calorie_kcal;
+  final double? carbohydrate_g;
+  final double? sugar_g;
+  final double? protein_g;
+  final double? fat_g;
+  final double? saturated_fat_g;
+  final double? trans_fat_g;
+  final double? sodium_mg;
+  final double? cholesterol_mg;
 
   NutritionItem({
-    required this.name,
-    required this.calories,
-    required this.carbohydrates,
-    required this.protein,
-    required this.fat,
-    required this.sugars,
-    required this.sodium,
-    required this.cholesterol,
-    required this.saturatedFat,
-    required this.transFat,
-    required this.servingSize,
+    this.food_code,
+    this.food_name,
+    this.serving_size_g,
+    this.calorie_kcal,
+    this.carbohydrate_g,
+    this.sugar_g,
+    this.protein_g,
+    this.fat_g,
+    this.saturated_fat_g,
+    this.trans_fat_g,
+    this.sodium_mg,
+    this.cholesterol_mg,
   });
 
   factory NutritionItem.fromJson(Map<String, dynamic> json) {
     return NutritionItem(
-      name: json['DESC_KOR'] ?? '',
-      calories: json['NUTR_CONT1'] ?? '',
-      carbohydrates: json['NUTR_CONT2'] ?? '',
-      protein: json['NUTR_CONT3'] ?? '',
-      fat: json['NUTR_CONT4'] ?? '',
-      sugars: json['NUTR_CONT5'] ?? '',
-      sodium: json['NUTR_CONT6'] ?? '',
-      cholesterol: json['NUTR_CONT7'] ?? '',
-      saturatedFat: json['NUTR_CONT8'] ?? '',
-      transFat: json['NUTR_CONT9'] ?? '',
-      servingSize: json['SERVING_SIZE'] ?? '',
+      food_code: json['food_code'],
+      food_name: json['food_name'],
+      serving_size_g: (json['serving_size_g'] as num?)?.toDouble(),
+      calorie_kcal: (json['calorie_kcal'] as num?)?.toDouble(),
+      carbohydrate_g: (json['carbohydrate_g'] as num?)?.toDouble(),
+      sugar_g: (json['sugar_g'] as num?)?.toDouble(),
+      protein_g: (json['protein_g'] as num?)?.toDouble(),
+      fat_g: (json['fat_g'] as num?)?.toDouble(),
+      saturated_fat_g: (json['saturated_fat_g'] as num?)?.toDouble(),
+      trans_fat_g: (json['trans_fat_g'] as num?)?.toDouble(),
+      sodium_mg: (json['sodium_mg'] as num?)?.toDouble(),
+      cholesterol_mg: (json['cholesterol_mg'] as num?)?.toDouble(),
     );
   }
+
+  // ✅ UI 코드와 호환되도록 Getter 추가
+  String? get foodName => food_name;
+  double? get calorieKcal => calorie_kcal;
 }

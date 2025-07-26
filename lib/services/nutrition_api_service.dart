@@ -1,34 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../constants/api_keys.dart';
 import '../models/nutrition_item.dart';
 
 class NutritionApiService {
-  static const String _baseUrl = 'https://openapi.foodsafetykorea.go.kr/api';
-  static const String _dataType = 'json';
-  static const String _dataId = 'I2790'; // 식품영양성분DB 기준
+  // 👉 실제 Flask 서버 주소로 변경해 주세요
+  final String baseUrl = 'http://10.0.2.2:5001'; // Android emulator 전용
 
-  Future<List<NutritionItem>> fetchNutritionItems(String query, {int start = 1, int end = 20}) async {
-    final encodedKey = ApiKeys.encodedServiceKey;
+  /// /search/all API 호출: 최대 15개의 식재료 검색 결과 반환
+  Future<List<NutritionItem>> searchAllSources(String query) async {
+    final uri = Uri.parse('$baseUrl/search/all?name=$query');
 
-    final url = Uri.parse('$_baseUrl/$encodedKey/$_dataType/$_dataId/$start/$end/DESC_KOR=$query');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final decoded = json.decode(response.body);
-      final List<dynamic> rawItems = decoded[_dataId]['row'];
-
-      // 필수 값 필터링 전처리
-      final filteredItems = rawItems
-          .where((e) =>
-      e['DESC_KOR'] != null &&
-          e['SERVING_SIZE'] != null &&
-          e['NUTR_CONT1'] != null)
-          .toList();
-
-      return filteredItems.map((e) => NutritionItem.fromJson(e)).toList();
-    } else {
-      throw Exception('API 호출 실패: ${response.statusCode}');
+    final res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('서버 오류: ${res.statusCode}');
     }
+
+    final data = jsonDecode(res.body);
+    final List items = data['items'];
+    return items.map((e) => NutritionItem.fromJson(e)).toList();
   }
 }
