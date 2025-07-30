@@ -3,6 +3,7 @@ import '../models/nutrition_item.dart';
 import '../models/selected_ingredients.dart';
 import '../services/nutrition_api_service.dart';
 import 'nutrition_input_screen.dart';
+import 'menu_create_screen.dart';
 
 class IngredientSearchScreen extends StatefulWidget {
   const IngredientSearchScreen({super.key});
@@ -42,7 +43,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
       context,
       MaterialPageRoute(builder: (_) => NutritionInputScreen(item: item)),
     );
-    setState(() {});
+    setState(() {}); // 돌아왔을 때 선택된 재료 갱신
   }
 
   Widget _buildSearchBar() {
@@ -103,7 +104,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
   Widget _buildResultItem(NutritionItem item) {
     return ListTile(
       title: Text(item.foodName ?? ''),
-      subtitle: Text('${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorieKcal?.toStringAsFixed(0) ?? '-'} kcal'),
+      subtitle: Text('${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorie_kcal?.toStringAsFixed(0) ?? '-'} kcal'),
       onTap: () => _navigateToInput(item),
     );
   }
@@ -121,11 +122,27 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
         ...items.map((item) => Card(
           child: ListTile(
             title: Text(item.foodName ?? ''),
-            subtitle: Text('${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorieKcal?.toStringAsFixed(0) ?? '-'} kcal'),
+            subtitle: Text('${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorie_kcal?.toStringAsFixed(0) ?? '-'} kcal'),
           ),
         )),
         const SizedBox(height: 80),
       ],
+    );
+  }
+
+  void _onCreateMenuPressed() {
+    if (SelectedIngredients.count == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('재료를 한 개 이상 추가해주세요.')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MenuCreateScreen(),
+      ),
     );
   }
 
@@ -176,9 +193,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: ElevatedButton(
-          onPressed: () {
-            // TODO: 메뉴 최종 생성 처리
-          },
+          onPressed: _onCreateMenuPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF2AB382),
             minimumSize: const Size(double.infinity, 56),
