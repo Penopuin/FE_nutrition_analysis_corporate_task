@@ -127,7 +127,7 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: const Text('영양성분 직접 입력',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         leading: const BackButton(),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
