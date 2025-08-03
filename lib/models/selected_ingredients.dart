@@ -41,6 +41,9 @@ class SelectedIngredients {
 
   /// JSON 리스트로 반환 (menu 생성 시 사용)
   static List<Map<String, dynamic>> toJsonList() {
-    return items.map((item) => item.toJson()).toList();
+    return items.map((item) => {
+      'food_code': item.food_code,
+      'amount': item.serving_size_g ?? 100.0, // 기본값 100g
+    }).toList();
   }
 }
