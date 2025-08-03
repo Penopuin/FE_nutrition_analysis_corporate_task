@@ -5,9 +5,9 @@ import '../models/nutrition_item.dart';
 class NutritionApiService {
   final String baseUrl = 'http://10.0.2.2:5001'; // Android emulator
 
-  /// ✅ 검색 API - offset 파라미터 추가
-  Future<List<NutritionItem>> searchAllSources(String query, {int offset = 0}) async {
-    final uri = Uri.parse('$baseUrl/search/all?name=$query&offset=$offset');
+  /// 검색 API
+  Future<List<NutritionItem>> searchAllSources(String query) async {
+    final uri = Uri.parse('$baseUrl/search/all?name=$query');
 
     final res = await http.get(uri);
     if (res.statusCode != 200) {

@@ -44,7 +44,24 @@ class NutritionItem {
     );
   }
 
-  // ✅ UI 코드와 호환되도록 Getter 추가
+  Map<String, dynamic> toJson() {
+    return {
+      'food_code': food_code,
+      'food_name': food_name,
+      'serving_size_g': serving_size_g,
+      'calorie_kcal': calorie_kcal,
+      'carbohydrate_g': carbohydrate_g,
+      'sugar_g': sugar_g,
+      'protein_g': protein_g,
+      'fat_g': fat_g,
+      'saturated_fat_g': saturated_fat_g,
+      'trans_fat_g': trans_fat_g,
+      'sodium_mg': sodium_mg,
+      'cholesterol_mg': cholesterol_mg,
+    };
+  }
+
+  // Getter for UI convenience
   String? get foodName => food_name;
   double? get calorieKcal => calorie_kcal;
 }

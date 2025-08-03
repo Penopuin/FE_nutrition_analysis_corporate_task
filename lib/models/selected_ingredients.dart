@@ -1,36 +1,46 @@
-import 'nutrition_item.dart';
+import 'package:bluemoon_flutter/models/nutrition_item.dart';
 
 class SelectedIngredients {
-  static final List<NutritionItem> _items = [];
+  /// 선택된 재료들을 저장하는 정적 리스트
+  static List<NutritionItem> items = [];
+
+  /// 전체 재료 리스트 반환
+  static List<NutritionItem> get all => items;
+
+  /// 현재 재료 개수 반환
+  static int get count => items.length;
 
   /// 재료 추가
   static void add(NutritionItem item) {
-    _items.add(item);
+    items.add(item);
   }
 
-  /// 재료 수정 (editIndex 기반 덮어쓰기)
-  static void update(int index, NutritionItem updatedItem) {
-    if (index >= 0 && index < _items.length) {
-      _items[index] = updatedItem;
+  /// 특정 인덱스의 재료 삭제
+  static void removeAt(int index) {
+    if (index >= 0 && index < items.length) {
+      items.removeAt(index);
     }
   }
 
-  /// 모든 재료 반환 (수정 불가능한 리스트로)
-  static List<NutritionItem> get all => List.unmodifiable(_items);
-
-  /// 재료 개수
-  static int get count => _items.length;
-
-  /// 모든 재료 초기화
+  /// 전체 삭제
   static void clear() {
-    _items.clear();
+    items.clear();
   }
 
-  /// JSON 변환 (Flask로 보낼 POST용)
+  /// 인덱스로 접근
+  static NutritionItem getAt(int index) {
+    return items[index];
+  }
+
+  /// 중복 체크 후 추가
+  static void addIfNotExists(NutritionItem item) {
+    if (!items.any((i) => i.food_code == item.food_code)) {
+      items.add(item);
+    }
+  }
+
+  /// JSON 리스트로 반환 (menu 생성 시 사용)
   static List<Map<String, dynamic>> toJsonList() {
-    return _items.map((item) => {
-      "food_code": item.food_code,
-      "amount": item.serving_size_g ?? 100.0, // 사용자가 입력한 제공량
-    }).toList();
+    return items.map((item) => item.toJson()).toList();
   }
 }

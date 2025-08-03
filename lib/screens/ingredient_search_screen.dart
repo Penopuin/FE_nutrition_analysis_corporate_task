@@ -48,7 +48,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
     });
 
     try {
-      final items = await NutritionApiService().searchAllSources(query, offset: 0);
+      final items = await NutritionApiService().searchAllSources(query);
       setState(() {
         _results = items;
         _offset = items.length;
@@ -67,10 +67,11 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final items = await NutritionApiService().searchAllSources(_lastQuery, offset: _offset);
+      final items = await NutritionApiService().searchAllSources(_lastQuery);
+
       setState(() {
         _results.addAll(items);
-        _offset += items.length;
+        _offset += items.length.toInt();
         _hasMore = items.length == _limit;
       });
     } catch (e) {
@@ -84,10 +85,10 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => NutritionInputScreen(item: item, editIndex: editIndex),
+        builder: (_) => NutritionInputScreen(item: item),
       ),
     );
-    setState(() {}); // 돌아왔을 때 갱신
+    setState(() {});
   }
 
   Widget _buildSearchBar() {
@@ -127,28 +128,39 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      height: 26,
+      height: 32,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: ingredients.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
-            return GestureDetector(
-              onTap: () => _navigateToInput(item, editIndex: index), // ✅ 수정 기능
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(20),
+            return Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _navigateToInput(item, editIndex: index),
+                    child: Text(
+                      item.foodName ?? '',
+                      style: const TextStyle(color: Colors.black87, fontSize: 13),
+                    ),
                   ),
-                  child: Text(
-                    item.foodName ?? '',
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        SelectedIngredients.items.removeAt(index);
+                      });
+                    },
+                    child: const Icon(Icons.close, size: 16, color: Colors.grey),
                   ),
-                ),
+                ],
               ),
             );
           }).toList(),
