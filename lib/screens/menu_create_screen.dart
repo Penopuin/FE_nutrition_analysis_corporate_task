@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/nutrition_item.dart';
 import '../models/selected_ingredients.dart';
 import '../services/nutrition_api_service.dart';
 import 'ai_comment_menu_screen.dart';

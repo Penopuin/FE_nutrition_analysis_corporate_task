@@ -4,8 +4,13 @@ import '../models/selected_ingredients.dart';
 
 class NutritionInputScreen extends StatefulWidget {
   final NutritionItem item;
+  final int? editIndex; // ✅ 수정용 인덱스 (null이면 추가)
 
-  const NutritionInputScreen({super.key, required this.item});
+  const NutritionInputScreen({
+    super.key,
+    required this.item,
+    this.editIndex,
+  });
 
   @override
   State<NutritionInputScreen> createState() => _NutritionInputScreenState();
@@ -85,7 +90,7 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
     );
   }
 
-  void _onAddIngredient() {
+  void _onAddOrUpdateIngredient() {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,7 +114,12 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
       cholesterol_mg: widget.item.cholesterol_mg,
     );
 
-    SelectedIngredients.add(updatedItem);
+    if (widget.editIndex != null) {
+      SelectedIngredients.update(widget.editIndex!, updatedItem);
+    } else {
+      SelectedIngredients.add(updatedItem);
+    }
+
     Navigator.pop(context);
   }
 
@@ -250,7 +260,7 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
               ),
             ),
             child: ElevatedButton(
-              onPressed: _onAddIngredient,
+              onPressed: _onAddOrUpdateIngredient,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2AB382),
                 minimumSize: const Size(double.infinity, 56),
@@ -261,9 +271,9 @@ class _NutritionInputScreenState extends State<NutritionInputScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    '레시피 추가하기',
-                    style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                  Text(
+                    widget.editIndex != null ? '레시피 수정하기' : '레시피 추가하기',
+                    style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 8),
                   CircleAvatar(

@@ -14,8 +14,26 @@ class IngredientSearchScreen extends StatefulWidget {
 
 class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
   List<NutritionItem> _results = [];
   bool _isLoading = false;
+  int _offset = 0;
+  final int _limit = 15;
+  String _lastQuery = '';
+  bool _hasMore = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100 &&
+          !_isLoading &&
+          _hasMore) {
+        _loadMore();
+      }
+    });
+  }
 
   Future<void> _onSearch() async {
     final query = _searchController.text.trim();
@@ -24,26 +42,52 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
     setState(() {
       _isLoading = true;
       _results = [];
+      _offset = 0;
+      _hasMore = true;
+      _lastQuery = query;
     });
 
     try {
-      final items = await NutritionApiService().searchAllSources(query);
-      setState(() => _results = items);
+      final items = await NutritionApiService().searchAllSources(query, offset: 0);
+      setState(() {
+        _results = items;
+        _offset = items.length;
+        _hasMore = items.length == _limit;
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('검색 실패: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('검색 실패: $e')));
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _navigateToInput(NutritionItem item) async {
+  Future<void> _loadMore() async {
+    if (_isLoading || !_hasMore || _lastQuery.isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final items = await NutritionApiService().searchAllSources(_lastQuery, offset: _offset);
+      setState(() {
+        _results.addAll(items);
+        _offset += items.length;
+        _hasMore = items.length == _limit;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('추가 로딩 실패: $e')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _navigateToInput(NutritionItem item, {int? editIndex}) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => NutritionInputScreen(item: item)),
+      MaterialPageRoute(
+        builder: (_) => NutritionInputScreen(item: item, editIndex: editIndex),
+      ),
     );
-    setState(() {}); // 돌아왔을 때 선택된 재료 갱신
+    setState(() {}); // 돌아왔을 때 갱신
   }
 
   Widget _buildSearchBar() {
@@ -87,12 +131,24 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: ingredients.map((item) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Text(
-                item.foodName ?? '',
-                style: const TextStyle(color: Colors.grey, fontSize: 13),
+          children: ingredients.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return GestureDetector(
+              onTap: () => _navigateToInput(item, editIndex: index), // ✅ 수정 기능
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    item.foodName ?? '',
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                ),
               ),
             );
           }).toList(),
@@ -104,29 +160,10 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
   Widget _buildResultItem(NutritionItem item) {
     return ListTile(
       title: Text(item.foodName ?? ''),
-      subtitle: Text('${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorie_kcal?.toStringAsFixed(0) ?? '-'} kcal'),
+      subtitle: Text(
+        '${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorie_kcal?.toStringAsFixed(0) ?? '-'} kcal',
+      ),
       onTap: () => _navigateToInput(item),
-    );
-  }
-
-  Widget _buildSelectedList() {
-    final items = SelectedIngredients.all;
-    if (items.isEmpty) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(height: 24),
-        Text('추가된 재료 (${items.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        ...items.map((item) => Card(
-          child: ListTile(
-            title: Text(item.foodName ?? ''),
-            subtitle: Text('${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorie_kcal?.toStringAsFixed(0) ?? '-'} kcal'),
-          ),
-        )),
-        const SizedBox(height: 80),
-      ],
     );
   }
 
@@ -158,35 +195,38 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
           const SizedBox(height: 40),
           _buildSearchBar(),
           _buildSelectedSummary(),
-          const SizedBox(height: 0),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _isLoading
+              child: _isLoading && _results.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : _results.isEmpty
                   ? const Center(child: Text('검색 결과가 없습니다.'))
-                  : ListView(
-                children: [
-                  ..._results.map(_buildResultItem),
-                  _buildSelectedList(),
-                ],
+                  : ListView.builder(
+                controller: _scrollController,
+                itemCount: _results.length + (_hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index < _results.length) {
+                    return _buildResultItem(_results[index]);
+                  } else {
+                    return const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                },
               ),
             ),
           ),
         ],
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              offset: const Offset(0, -1),
-              blurRadius: 8,
-            ),
+            BoxShadow(color: Colors.black12, offset: Offset(0, -1), blurRadius: 8),
           ],
-          borderRadius: const BorderRadius.only(
+          borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           ),
@@ -204,7 +244,8 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('메뉴 만들기', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text('메뉴 만들기',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(width: 8),
               CircleAvatar(
                 backgroundColor: Colors.white,

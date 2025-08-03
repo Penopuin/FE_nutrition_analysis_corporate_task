@@ -8,6 +8,13 @@ class SelectedIngredients {
     _items.add(item);
   }
 
+  /// 재료 수정 (editIndex 기반 덮어쓰기)
+  static void update(int index, NutritionItem updatedItem) {
+    if (index >= 0 && index < _items.length) {
+      _items[index] = updatedItem;
+    }
+  }
+
   /// 모든 재료 반환 (수정 불가능한 리스트로)
   static List<NutritionItem> get all => List.unmodifiable(_items);
 

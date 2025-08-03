@@ -1,6 +1,73 @@
 import 'package:flutter/material.dart';
-import '../models/nutrition_item.dart';
 import 'package:intl/intl.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+// NutritionItem 클래스 간단 정의 (테스트용)
+// 실제 앱에서는 models/nutrition_item.dart 에서 import 하세요
+class NutritionItem {
+  final String? food_name;
+  final double? serving_size_g;
+  final double? calorie_kcal;
+  final double? carbohydrate_g;
+  final double? sugar_g;
+  final double? protein_g;
+  final double? fat_g;
+  final double? saturated_fat_g;
+  final double? trans_fat_g;
+  final double? sodium_mg;
+  final double? cholesterol_mg;
+
+  NutritionItem({
+    this.food_name,
+    this.serving_size_g,
+    this.calorie_kcal,
+    this.carbohydrate_g,
+    this.sugar_g,
+    this.protein_g,
+    this.fat_g,
+    this.saturated_fat_g,
+    this.trans_fat_g,
+    this.sodium_mg,
+    this.cholesterol_mg,
+  });
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'AI 코멘트 예시',
+      home: AiCommentMenuScreen(
+        item: NutritionItem(
+          food_name: "닭가슴살",
+          serving_size_g: 250,
+          calorie_kcal: 320,
+          carbohydrate_g: 10,
+          sugar_g: 5,
+          protein_g: 35,
+          fat_g: 15,
+          saturated_fat_g: 2,
+          trans_fat_g: 0,
+          sodium_mg: 300,
+          cholesterol_mg: 60,
+        ),
+        price: 10000,
+        aiComment: '''
+이 시스템은 공공 데이터를 활용하여 식재료의 영양 정보를 분석하고,  
+사용자의 입력에 따라 맞춤형 코멘트를 생성하는 구조입니다.  
+복잡한 계산 없이도 누구나 건강한 식단을 이해할 수 있도록 설계되었습니다.  
+AI는 재료 기반으로 칼로리, 탄수화물, 단백질 등 주요 성분을 분석하고  
+식단 목적에 맞는 피드백을 제공합니다.
+''',
+      ),
+    );
+  }
+}
 
 class AiCommentMenuScreen extends StatelessWidget {
   final NutritionItem item;
@@ -58,17 +125,13 @@ class AiCommentMenuScreen extends StatelessWidget {
         centerTitle: true,
         title: const Text(
           '메뉴 상세',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
         leading: const BackButton(),
       ),
-
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -83,19 +146,16 @@ class AiCommentMenuScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.black54),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 메뉴명
                   Text(
                     item.food_name ?? "메뉴 이름 없음",
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-
                   // AI 코멘트
                   Container(
                     width: double.infinity,
@@ -111,8 +171,6 @@ class AiCommentMenuScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // 가격
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -127,10 +185,7 @@ class AiCommentMenuScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
-                  // 칼로리 및 성분
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -158,14 +213,11 @@ class AiCommentMenuScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 16),
                         _nutrientRow("총 제공량 (g/ml)",
                             "${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g --ml",
                             labelColor: Colors.black, bold: true),
-
                         const Divider(color: Color(0xFFDDDDDD), thickness: 0.5),
-
                         _nutrientRow("단백질", "${item.protein_g?.toStringAsFixed(1)}g"),
                         _nutrientRow("탄수화물", "${item.carbohydrate_g?.toStringAsFixed(1)}g"),
                         _nutrientRow("└ 당", "${item.sugar_g?.toStringAsFixed(1)}g",
@@ -175,9 +227,7 @@ class AiCommentMenuScreen extends StatelessWidget {
                             labelColor: Colors.grey[600]!, fontSize: 13),
                         _nutrientRow("└ 트랜스지방", "${item.trans_fat_g?.toStringAsFixed(1)}g",
                             labelColor: Colors.grey[600]!, fontSize: 13),
-
                         const Divider(color: Color(0xFFDDDDDD), thickness: 0.5),
-
                         Row(
                           children: [
                             Expanded(
@@ -210,9 +260,7 @@ class AiCommentMenuScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const Divider(color: Color(0xFFDDDDDD), thickness: 0.5),
-
                         const SizedBox(height: 12),
                         const Text(
                           "※ 1일 영양성분 기준치는 2,000kcal 기준이며\n개인의 필요 열량에 따라 다를 수 있습니다.",
@@ -221,7 +269,6 @@ class AiCommentMenuScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
                 ],
               ),
