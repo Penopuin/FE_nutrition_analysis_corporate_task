@@ -173,7 +173,7 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
     return ListTile(
       title: Text(item.foodName ?? ''),
       subtitle: Text(
-        '${item.serving_size_g?.toStringAsFixed(0) ?? '-'}g | ${item.calorie_kcal?.toStringAsFixed(0) ?? '-'} kcal',
+        '${item.calorie_kcal?.toStringAsFixed(0) ?? '-'} kcal',
       ),
       onTap: () => _navigateToInput(item),
     );
@@ -201,10 +201,22 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          '식재료 검색',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
           _buildSearchBar(),
           _buildSelectedSummary(),
           Expanded(
@@ -256,15 +268,20 @@ class _IngredientSearchScreenState extends State<IngredientSearchScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('메뉴 만들기',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                '메뉴 만들기',
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(width: 8),
               CircleAvatar(
                 backgroundColor: Colors.white,
                 radius: 12,
                 child: Text(
                   '$selectedCount',
-                  style: const TextStyle(color: Color(0xFF2AB382), fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Color(0xFF2AB382),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

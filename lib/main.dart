@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/ingredient_search_screen.dart';
+import 'screens/menu_list_screen.dart'; // 추가
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const IngredientSearchScreen(),
+      home: const MenuListScreen(), // 여기를 바꿔줌
     );
   }
 }
